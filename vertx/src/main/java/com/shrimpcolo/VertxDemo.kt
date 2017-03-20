@@ -3,9 +3,13 @@ package com.shrimpcolo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.vertx.core.json.Json
+import io.vertx.kotlin.core.json.json
+import io.vertx.kotlin.core.json.obj
 import io.vertx.rxjava.core.AbstractVerticle
 import io.vertx.rxjava.core.MultiMap
+import io.vertx.rxjava.core.Vertx
 import io.vertx.rxjava.core.http.HttpServerResponse
+import io.vertx.rxjava.ext.mongo.MongoClient
 import io.vertx.rxjava.ext.web.Router
 import io.vertx.rxjava.ext.web.client.WebClient
 import io.vertx.rxjava.ext.web.codec.BodyCodec
@@ -23,6 +27,7 @@ class VertxDemo : AbstractVerticle() {
     )
 
     private val router by lazy { createRouter() }
+    private val bookDao by lazy { BookDao(vertx) }
 
     @Throws(Exception::class)
     override fun start() {
@@ -30,6 +35,10 @@ class VertxDemo : AbstractVerticle() {
                 .requestHandler(router::accept)
                 .listen(8080)
 
+//        bookDao.find(json { obj("title" to "美女与野兽") }) { println("Name is ${it.result()[0].getString("title")}") }
+//        bookDao.delete(json { obj("title" to "美女与野兽") }) {
+//            if (it.succeeded()) println("Product removed")
+//        }
 //        searchBooks("黑客").subscribe(::println, Throwable::printStackTrace)
     }
 
@@ -75,9 +84,8 @@ class VertxDemo : AbstractVerticle() {
                 .`as`(BodyCodec.string())
                 .rxSend()
                 .map { jacksonObjectMapper().readValue<Info>(it.body()) }
+                .doOnSuccess { it.books?.first()?.let { bookDao.save(it) { println("Inserted id: ${it.result()}") } } }
     }
-
-    fun <T : Any> T.toJson(): String = Json.encodePrettily(this)
 
     data class MyBook(val id: Int, val name: String)
 }

@@ -1,5 +1,7 @@
 package com.shrimpcolo
 
+import io.vertx.core.json.Json
+
 /**
  * Created by Johnny Tam on 2017/3/20.
  */
@@ -10,32 +12,32 @@ data class Info(
     val books: List<Book>?)
 
 data class Book(
-        val rating: Rating?,
-        val author: List<String>?,
-        val subtitle: String?,
-        val pubdate: String?,
-        val origin_title: String?,
-        val image: String?,
-        val binding: String?,
-        val catalog: String?,
-        val pages: String?,
-        val images: Image?,
-        val alt: String?,
-        val id: String?,
-        val publisher: String?,
-        val isbn10: String?,
-        val isbn13: String?,
-        val title: String?,
-        val url: String?,
-        val alt_title: String?,
-        val author_intro: String?,
-        val summary: String?,
-        val price: String?,
-        val ebook_url: String?,
-        val ebook_price: String?,
-        val series: Series?,
-        val tags: List<Tag>?,
-        val translator: List<String>?)
+        val rating: Rating? = null,
+        val author: List<String>? = null,
+        val subtitle: String? = null,
+        val pubdate: String? = null,
+        val origin_title: String? = null,
+        val image: String? = null,
+        val binding: String? = null,
+        val catalog: String? = null,
+        val pages: String? = null,
+        val images: Image? = null,
+        val alt: String? = null,
+        val id: String? = null,
+        val publisher: String? = null,
+        val isbn10: String? = null,
+        val isbn13: String? = null,
+        val title: String? = null,
+        val url: String? = null,
+        val alt_title: String? = null,
+        val author_intro: String? = null,
+        val summary: String? = null,
+        val price: String? = null,
+        val ebook_url: String? = null,
+        val ebook_price: String? = null,
+        val series: Series? = null,
+        val tags: List<Tag>? = null,
+        val translator: List<String>? = null)
 
 data class Rating(
     val max: Int,
@@ -56,4 +58,6 @@ data class Tag(
     val count: Int,
     val name: String?,
     val title: String?)
+
+fun <T : Any> T.toJson(): String = Json.encodePrettily(this)
 
