@@ -18,8 +18,8 @@ import rx.lang.kotlin.toSingletonObservable
  */
 class VertxDemo : AbstractVerticle() {
     private val BOOKS = listOf(
-            Book(1, "book1"),
-            Book(2, "book2")
+            MyBook(1, "book1"),
+            MyBook(2, "book2")
     )
 
     private val router by lazy { createRouter() }
@@ -46,34 +46,24 @@ class VertxDemo : AbstractVerticle() {
             val ret = if (params.isEmpty) {
                 BOOKS.toJson().toSingletonObservable().toSingle()
             } else {
-                searchBooks(params)
+                searchBooks(params) { params, (rating, author) ->
+                    (params["score"]?.toFloat() ?: 0f) <= (rating?.average?.toFloat() ?: 0f) &&
+                            (params["author"]?.let { query -> author?.any { it.contains(query) } } ?: true)
+                }
             }
 
             ret.subscribe(ctx.response()::end, Throwable::printStackTrace)
         }
     }
 
-    fun searchBooks(params: MultiMap): Single<String> {
+    fun searchBooks(params: MultiMap, predicate: (MultiMap, Book) -> Boolean): Single<String> {
         val name = params["name"]
-        var info = name?.let { searchBooks(it) }
-
-        val score = params["score"]
-        if (score != null) {
-            info = info?.map {
-                val books = it.books?.filter { score.toFloat() <= it.rating?.average?.toFloat() ?: 0f }
-                val size = books?.size ?: 0
-                Info(size, it.start, it.total, books)
-            }
-        }
-
-        val author = params["author"]
-        if (author != null) {
-            info = info?.map {
-                val books = it.books?.filter { it.author?.contains(author) ?: false }
-                val size = books?.size ?: 0
-                Info(size, it.start, it.total, books)
-            }
-        }
+        val info = name?.let { searchBooks(it) }
+                ?.map {
+                    val books = it.books?.filter { predicate(params, it) }
+                    val size = books?.size ?: 0
+                    Info(size, it.start, it.total, books)
+                }
 
         return info?.map(Info::toString) ?: "Not Found".toSingletonObservable().toSingle()
     }
@@ -86,7 +76,7 @@ class VertxDemo : AbstractVerticle() {
 
     fun <T : Any> T.toJson(): String = Json.encodePrettily(this)
 
-    data class Book(val id: Int, val name: String)
+    data class MyBook(val id: Int, val name: String)
 }
 
 

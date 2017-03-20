@@ -11,6 +11,7 @@ data class Info(
 
 data class Book(
         val rating: Rating?,
+        val author: List<String>?,
         val subtitle: String?,
         val pubdate: String?,
         val origin_title: String?,
@@ -33,7 +34,6 @@ data class Book(
         val ebook_url: String?,
         val ebook_price: String?,
         val series: Series?,
-        val author: List<String>?,
         val tags: List<Tag>?,
         val translator: List<String>?)
 
