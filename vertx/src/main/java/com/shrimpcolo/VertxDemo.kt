@@ -66,6 +66,15 @@ class VertxDemo : AbstractVerticle() {
             }
         }
 
+        val author = params["author"]
+        if (author != null) {
+            info = info?.map {
+                val books = it.books?.filter { it.author?.contains(author) ?: false }
+                val size = books?.size ?: 0
+                Info(size, it.start, it.total, books)
+            }
+        }
+
         return info?.map(Info::toString) ?: "Not Found".toSingletonObservable().toSingle()
     }
 
