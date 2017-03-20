@@ -1,7 +1,10 @@
 package com.shrimpcolo
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.vertx.core.json.Json
 import io.vertx.rxjava.core.AbstractVerticle
+import io.vertx.rxjava.core.http.HttpServerResponse
 import io.vertx.rxjava.ext.web.Router
 import io.vertx.rxjava.ext.web.client.WebClient
 import io.vertx.rxjava.ext.web.codec.BodyCodec
@@ -26,7 +29,7 @@ class VertxDemo : AbstractVerticle() {
                 .requestHandler(router::accept)
                 .listen(8080)
 
-        searchBooks("黑客")
+//        searchBooks("黑客").subscribe(::println, Throwable::printStackTrace)
     }
 
     fun createRouter(): Router = Router.router(vertx).apply {
@@ -42,19 +45,19 @@ class VertxDemo : AbstractVerticle() {
             val ret = when {
                 params.isEmpty -> BOOKS.toJson().toSingletonObservable().toSingle()
 //                params["name"] != null -> BOOKS.filter { it.name.contains(params["name"]) }.toJson()
-                params["name"] != null -> searchBooks(params["name"])
+                params["name"] != null -> searchBooks(params["name"]).map(Info::toString)
                 else -> "".toSingletonObservable().toSingle()
             }
 
-            ret.subscribe { ctx.response().end(it) }
+            ret.subscribe(ctx.response()::end, Throwable::printStackTrace)
         }
     }
 
-    fun searchBooks(bookName: String): Single<String> = WebClient.create(vertx)
+    fun searchBooks(bookName: String): Single<Info> = WebClient.create(vertx)
             .getAbs("https://api.douban.com/v2/book/search?q=$bookName")
             .`as`(BodyCodec.string())
             .rxSend()
-            .map { it.body() }
+            .map { jacksonObjectMapper().readValue<Info>(it.body()) }
 
     fun <T : Any> T.toJson(): String = Json.encodePrettily(this)
 
