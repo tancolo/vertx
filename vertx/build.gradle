@@ -43,8 +43,10 @@ dependencies {
     compile "io.vertx:vertx-rx-java:$vertx_version"
     compile "io.vertx:vertx-lang-kotlin:$vertx_version"
     compile 'io.reactivex:rxkotlin:0.60.0'
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.8.7"
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }
 
 
