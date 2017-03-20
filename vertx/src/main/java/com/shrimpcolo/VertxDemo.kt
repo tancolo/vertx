@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.vertx.core.json.Json
 import io.vertx.rxjava.core.AbstractVerticle
+import io.vertx.rxjava.core.MultiMap
 import io.vertx.rxjava.core.http.HttpServerResponse
 import io.vertx.rxjava.ext.web.Router
 import io.vertx.rxjava.ext.web.client.WebClient
@@ -42,15 +43,30 @@ class VertxDemo : AbstractVerticle() {
         get("/books").handler { ctx ->
             val params = ctx.request().params()
 
-            val ret = when {
-                params.isEmpty -> BOOKS.toJson().toSingletonObservable().toSingle()
-//                params["name"] != null -> BOOKS.filter { it.name.contains(params["name"]) }.toJson()
-                params["name"] != null -> searchBooks(params["name"]).map(Info::toString)
-                else -> "".toSingletonObservable().toSingle()
+            val ret = if (params.isEmpty) {
+                BOOKS.toJson().toSingletonObservable().toSingle()
+            } else {
+                searchBooks(params)
             }
 
             ret.subscribe(ctx.response()::end, Throwable::printStackTrace)
         }
+    }
+
+    fun searchBooks(params: MultiMap): Single<String> {
+        val name = params["name"]
+        var info = name?.let { searchBooks(it) }
+
+        val score = params["score"]
+        if (score != null) {
+            info = info?.map {
+                val books = it.books?.filter { score.toFloat() <= it.rating?.average?.toFloat() ?: 0f }
+                val size = books?.size ?: 0
+                Info(size, it.start, it.total, books)
+            }
+        }
+
+        return info?.map(Info::toString) ?: "Not Found".toSingletonObservable().toSingle()
     }
 
     fun searchBooks(bookName: String): Single<Info> = WebClient.create(vertx)
