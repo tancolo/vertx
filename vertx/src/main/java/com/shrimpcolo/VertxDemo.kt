@@ -46,21 +46,20 @@ class VertxDemo : AbstractVerticle() {
             val ret = if (params.isEmpty) {
                 BOOKS.toJson().toSingletonObservable().toSingle()
             } else {
-                searchBooks(params) { params, (rating, author) ->
-                    (params["score"]?.toFloat() ?: 0f) <= (rating?.average?.toFloat() ?: 0f) &&
-                            (params["author"]?.let { query -> author?.any { it.contains(query) } } ?: true)
-                }
+                searchBooks(params,
+                        { params, (rating) -> (params["score"]?.toFloat() ?: 0f) <= (rating?.average?.toFloat() ?: 0f) },
+                        { params, (_, author) -> params["author"]?.let { query -> author?.any { it.contains(query) } } ?: true })
             }
 
-            ret.subscribe(ctx.response()::end, Throwable::printStackTrace)
+            ret.onErrorReturn { it.printStackTrace(); "Not Found" }.subscribe(ctx.response()::end, Throwable::printStackTrace)
         }
     }
 
-    fun searchBooks(params: MultiMap, predicate: (MultiMap, Book) -> Boolean): Single<String> {
+    fun searchBooks(params: MultiMap, vararg predicates: (MultiMap, Book) -> Boolean): Single<String> {
         val name = params["name"]
         val info = name?.let { searchBooks(it) }
                 ?.map {
-                    val books = it.books?.filter { predicate(params, it) }
+                    val books = it.books?.filter { book -> predicates.all { it(params, book) } }
                     val size = books?.size ?: 0
                     Info(size, it.start, it.total, books)
                 }
@@ -68,11 +67,15 @@ class VertxDemo : AbstractVerticle() {
         return info?.map(Info::toString) ?: "Not Found".toSingletonObservable().toSingle()
     }
 
-    fun searchBooks(bookName: String): Single<Info> = WebClient.create(vertx)
-            .getAbs("https://api.douban.com/v2/book/search?q=$bookName")
-            .`as`(BodyCodec.string())
-            .rxSend()
-            .map { jacksonObjectMapper().readValue<Info>(it.body()) }
+    fun searchBooks(bookName: String): Single<Info> {
+        if (bookName.isEmpty()) return Single.error(Throwable("book name is empty"))
+
+        return WebClient.create(vertx)
+                .getAbs("https://api.douban.com/v2/book/search?q=$bookName")
+                .`as`(BodyCodec.string())
+                .rxSend()
+                .map { jacksonObjectMapper().readValue<Info>(it.body()) }
+    }
 
     fun <T : Any> T.toJson(): String = Json.encodePrettily(this)
 
