@@ -1,0 +1,56 @@
+{
+  "_id": "58d1503505eb4b1230dd2827",
+  "rating": {
+    "max": 10,
+    "numRaters": 22,
+    "average": "6.8",
+    "min": 0
+  },
+  "author": [
+    "欧晴"
+  ],
+  "subtitle": "",
+  "pubdate": "2006-6",
+  "origin_title": "",
+  "image": "https://img3.doubanio.com/mpic/s5658854.jpg",
+  "binding": "简裝本",
+  "catalog": "",
+  "pages": "213",
+  "images": {
+    "small": "https://img3.doubanio.com/spic/s5658854.jpg",
+    "large": "https://img3.doubanio.com/lpic/s5658854.jpg",
+    "medium": "https://img3.doubanio.com/mpic/s5658854.jpg"
+  },
+  "alt": "https://book.douban.com/subject/1822101/",
+  "id": "1822101",
+  "publisher": "中国时代经济出版社",
+  "isbn10": "7802210720",
+  "isbn13": "9787802210721",
+  "title": "偏要是美女",
+  "url": "https://api.douban.com/v2/book/1822101",
+  "alt_title": "",
+  "author_intro": "",
+  "summary": "依稀昨日还是纯纯小女生，不知什么时候，后80年代生人已继80初生人的短暂喧器之后风生水起。当我们或主动或被动地混迹其中，甚至以“大姐大”的身份对他们授之以渔，我们才意识到20岁不再来，那些曾在我们眼中青涩甚至幼稚的小毛头，顺理成章地开始成为我们的同事、朋友、合作伙伴、竞争对手，甚至情人。\n    年龄如山坡上的野草般在春天里疯长，有些介意、失落，甚至恐惧，但生活，原本如此。看大街上偶然走过的老妇人鹤发鸡皮的身影，会惊异时光的车轮竟会将青春碾压得如此破碎支离，但生活，原本如此。\n    年龄和感情——两个长久以来最容易被女人掩藏的东西，能开诚布公布地展现、被正视，是女人应该做也必须做的一件事。深埋内心固然最安全最隐蔽，但久而久之，也容易腐烂、变质。",
+  "price": "25.00元",
+  "ebook_url": null,
+  "ebook_price": null,
+  "series": null,
+  "tags": [
+    {
+      "count": 1,
+      "name": "小资",
+      "title": "小资"
+    },
+    {
+      "count": 1,
+      "name": "我笑了",
+      "title": "我笑了"
+    },
+    {
+      "count": 1,
+      "name": "杂七杂八",
+      "title": "杂七杂八"
+    }
+  ],
+  "translator": []
+}

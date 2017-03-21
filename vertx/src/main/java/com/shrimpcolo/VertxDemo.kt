@@ -2,7 +2,9 @@ package com.shrimpcolo
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.mongodb.async.client.MongoCollection
 import io.vertx.core.json.Json
+import io.vertx.kotlin.core.json.array
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
 import io.vertx.rxjava.core.AbstractVerticle
@@ -77,14 +79,32 @@ class VertxDemo : AbstractVerticle() {
     }
 
     fun searchBooks(bookName: String): Single<Info> {
+        val dataBase = searchBooksFromDataBase(bookName)
+        val network = searchBooksFromNetwork(bookName)
+
+        return Single.concat(dataBase, network).first { println("count: ${it.count}"); it.count != 0 }.toSingle()
+    }
+
+    fun searchBooksFromNetwork(bookName: String): Single<Info> {
         if (bookName.isEmpty()) return Single.error(Throwable("book name is empty"))
 
         return WebClient.create(vertx)
                 .getAbs("https://api.douban.com/v2/book/search?q=$bookName")
                 .`as`(BodyCodec.string())
                 .rxSend()
+                .doOnSuccess { println("query network") }
                 .map { jacksonObjectMapper().readValue<Info>(it.body()) }
-                .doOnSuccess { it.books?.first()?.let { bookDao.save(it) { println("Inserted id: ${it.result()}") } } }
+                .doOnSuccess { it.books?.forEach { bookDao.save(it) } }
+    }
+
+    fun searchBooksFromDataBase(bookName: String): Single<Info> {
+        val query = json {
+            obj("title" to bookName)
+        }
+
+        return bookDao.find(query)
+                .doOnSuccess { println("query database") }
+                .map { Info(it.size, 0, it.size, it) }
     }
 
     data class MyBook(val id: Int, val name: String)
